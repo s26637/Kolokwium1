@@ -19,10 +19,10 @@ public class BookRep : IBookRep
     public async Task<Book> GetBook(int id)
     {
 	    var query = @"SELECT 
-							PK,
-							title,
-						FROM Book
-						WHERE PK = @ID";
+							books.PK AS BookId,
+							books.title AS BookTitle
+						FROM books
+						WHERE books.PK = @ID";
 	    
 	    await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
 	    await using SqlCommand command = new SqlCommand();
@@ -35,8 +35,9 @@ public class BookRep : IBookRep
 
 	    var reader = await command.ExecuteReaderAsync();
 
-	    var bookIdOrdinal = reader.GetOrdinal("PK");
-	    var bookTitleOrdinal = reader.GetOrdinal("title");
+	    var bookIdOrdinal = reader.GetOrdinal("BookId");
+	    var bookTitleOrdinal = reader.GetOrdinal("BookTitle");
+	    
 	    
 	    Book book = null;
 
@@ -57,7 +58,7 @@ public class BookRep : IBookRep
     public async Task<int> AddBook(Book book)
     {
 	    var insert = @"INSERT INTO Book VALUES(@title);
-					   SELECT @@IDENTITY AS ID;";
+					   SELECT @@IDENTITY AS PK;";
 	    
 	    await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
 	    await using SqlCommand command = new SqlCommand();
@@ -65,7 +66,7 @@ public class BookRep : IBookRep
 	    command.Connection = connection;
 	    command.CommandText = insert;
 	    
-	    command.Parameters.AddWithValue("@Tittle", book.Title);
+	    command.Parameters.AddWithValue("@title", book.Title);
 	    
 	    await connection.OpenAsync();
 	    
